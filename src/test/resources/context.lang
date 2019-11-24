@@ -1,0 +1,18 @@
+import Bus from "./bus";
+
+export type AppContext {
+
+	val bus = new Bus();
+	
+	val registry = new Registry();
+
+	public Nothing init () {
+		val components = createComponents();
+		
+		components.map(component -> {
+			registry.registerComponent(component);
+			bus.registerEvents(component);
+		});
+	}
+
+}

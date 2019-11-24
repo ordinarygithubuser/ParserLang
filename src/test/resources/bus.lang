@@ -1,0 +1,12 @@
+export type Bus {
+
+	val connections = new Map[Event, List[Method]]();
+
+	public add (event: Event, callback: Consumer[Event]): Nothing {
+		val listeners = connections.getOrElse(event, new List[Method]());
+		
+		listeners.add(callback);
+		connections.set(event, listeners);
+	}
+
+}

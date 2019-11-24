@@ -52,27 +52,16 @@ public class SymbolState extends State<Symbol, Token> {
 		final var location = input.getLocation();
 		final var value = input.getValue();
 		final var valueBuilder = new StringBuilder(value);
+		final var next = rest.peek();
 
-		if (isMultiCharSymbol(value, rest)) {
+		if (next.isPresent() && matcher.isSymbol(input + next.get().getValue())) {
 			valueBuilder.append(rest.pop().get().getValue());
 		}
 
-		final SymbolToken symbol = createSymbol(valueBuilder.toString(), location);
-
-		if (symbol == null) {
-			throw new MachineException("Invalid Symbol", this, valueBuilder.toString());
-		}
-
-		return symbol;
+		return createSymbol(valueBuilder.toString(), location);
 	}
 
-	private boolean isMultiCharSymbol(final String input, final Stream<Symbol> symbols) {
-		final var symbol = symbols.peek();
-
-		return symbol.isPresent() && matcher.isSymbol(input + symbol.get().getValue());
-	}
-
-	private SymbolToken createSymbol(final String value, final Location location) {
+	private SymbolToken createSymbol(final String value, final Location location) throws MachineException {
 		switch (value) {
 		case SymbolTokens.ADDITION:
 			return new AdditionToken(location);
@@ -119,7 +108,7 @@ public class SymbolState extends State<Symbol, Token> {
 		case SymbolTokens.SUBTRACTION:
 			return new SubtractionToken(location);
 		default:
-			return null;
+			throw new MachineException("Invalid Symbol", this, value);
 		}
 	}
 

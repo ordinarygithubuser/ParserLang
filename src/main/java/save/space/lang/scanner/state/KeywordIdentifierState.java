@@ -9,6 +9,7 @@ import save.space.lang.common.Location;
 import save.space.lang.common.Stream;
 import save.space.lang.common.Symbol;
 import save.space.lang.common.Token;
+import save.space.lang.machine.MachineException;
 import save.space.lang.machine.State;
 import save.space.lang.scanner.token.IdentifierToken;
 import save.space.lang.scanner.token.keyword.ExportToken;
@@ -34,16 +35,17 @@ public class KeywordIdentifierState extends State<Symbol, Token> {
 	private Matcher matcher;
 
 	@Override
-	public Token consume(final Symbol currentSymbol, final Stream<Symbol> rest) {
+	public Token consume(final Symbol currentSymbol, final Stream<Symbol> rest) throws MachineException {
 		final Location location = currentSymbol.getLocation();
 		final StringBuilder builder = new StringBuilder(currentSymbol.getValue());
+		final Optional<Symbol> next = rest.peek();
 
-		while (matches(rest)) {
+		while (next.isPresent() && matcher.isIdentifier(next.get().getValue())) {
 			builder.append(rest.pop().get().getValue());
-			final KeywordToken keyword = createKeyword(builder.toString(), location);
+			final var value = builder.toString();
 
-			if (keyword != null) {
-				return keyword;
+			if (matcher.isKeyword(value)) {
+				return createKeyword(value, location);
 			}
 		}
 
@@ -55,13 +57,7 @@ public class KeywordIdentifierState extends State<Symbol, Token> {
 		return input.isPresent() && matcher.isIdentifierStart(input.get().getValue());
 	}
 
-	private boolean matches(final Stream<Symbol> symbols) {
-		final Optional<Symbol> peek = symbols.peek();
-
-		return peek.isPresent() && matcher.isIdentifier(peek.get().getValue());
-	}
-
-	private KeywordToken createKeyword(final String name, final Location location) {
+	private KeywordToken createKeyword(final String name, final Location location) throws MachineException {
 		switch (name) {
 		case KeywordTokens.EXPORT:
 			return new ExportToken(location);
@@ -90,7 +86,7 @@ public class KeywordIdentifierState extends State<Symbol, Token> {
 		case KeywordTokens.VAR:
 			return new VarToken(location);
 		default:
-			return null;
+			throw new MachineException("Invalid Keyword", this, name);
 		}
 	}
 

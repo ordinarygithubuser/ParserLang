@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import save.space.lang.common.Stream;
 import save.space.lang.common.Symbol;
+import save.space.lang.scanner.token.keyword.KeywordTokens;
 import save.space.lang.scanner.token.symbol.SymbolTokens;
 
 @Component
@@ -26,6 +27,15 @@ public class Matcher {
 	public boolean isSymbol(final String value) {
 		for (final String symbolType : SymbolTokens.VALUES) {
 			if (symbolType.equals(value)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean isKeyword(final String value) {
+		for (final String keywordType : KeywordTokens.VALUES) {
+			if (keywordType.equals(value)) {
 				return true;
 			}
 		}
